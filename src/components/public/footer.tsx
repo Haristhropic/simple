@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { getSetting } from "@/lib/queries/settings";
 
-export function Footer() {
+export async function Footer() {
+  const instagramUrl = await getSetting("instagramUrl");
+
   return (
     <footer className="border-t border-border">
       <div className="mx-auto max-w-[1400px] px-6 py-16 lg:px-10">
@@ -45,12 +48,18 @@ export function Footer() {
                   Contact
                 </Link>
               </li>
-              <li>
-                <span className="text-sm text-muted-foreground">Instagram</span>
-              </li>
-              <li>
-                <span className="text-sm text-muted-foreground">Pinterest</span>
-              </li>
+              {instagramUrl && (
+                <li>
+                  <a
+                    href={instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Instagram
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -60,10 +69,14 @@ export function Footer() {
             </h4>
             <ul className="flex flex-col gap-3">
               <li>
-                <span className="text-sm text-muted-foreground">Privacy</span>
+                <Link href="/privacy" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  Privacy
+                </Link>
               </li>
               <li>
-                <span className="text-sm text-muted-foreground">Terms</span>
+                <Link href="/terms" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  Terms
+                </Link>
               </li>
             </ul>
           </div>
