@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="text-xl font-medium tracking-tight">MAISON</h1>
-          <p className="mt-1 text-sm text-zinc-500">Sign in to your account</p>
+          <p className="mt-1 text-sm text-zinc-500">Sign in to your admin account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
