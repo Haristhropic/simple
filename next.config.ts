@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 
+const appUrl =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+  "http://localhost:3000";
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -20,6 +25,10 @@ const nextConfig: NextConfig = {
         hostname: "i.pinimg.com",
       },
     ],
+  },
+  env: {
+    NEXT_PUBLIC_APP_URL: appUrl,
+    BETTER_AUTH_URL: appUrl,
   },
 };
 

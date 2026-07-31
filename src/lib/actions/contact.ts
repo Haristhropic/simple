@@ -27,3 +27,11 @@ export async function getContactMessages() {
     orderBy: { createdAt: "desc" },
   });
 }
+
+export async function deleteContactMessage(id: string) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) throw new Error("Unauthorized");
+  const user = session.user as { role?: string };
+  if (user.role !== "ADMIN") throw new Error("Forbidden");
+  await prisma.contactMessage.delete({ where: { id } });
+}
