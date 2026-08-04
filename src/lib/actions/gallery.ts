@@ -21,7 +21,10 @@ export async function createGalleryImage(data: {
   order?: number;
 }) {
   await requireAdmin();
-  return prisma.galleryImage.create({ data: { ...data, order: data.order ?? 0 } });
+  const image = await prisma.galleryImage.create({ data: { ...data, order: data.order ?? 0 } });
+  revalidatePath("/admin/gallery");
+  revalidatePath("/gallery");
+  return image;
 }
 
 export async function updateGalleryImage(
