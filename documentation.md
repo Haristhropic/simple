@@ -179,7 +179,8 @@ magazine-open/
 │   │   │       └── profile/page.tsx
 │   │   └── api/
 │   │       ├── auth/[...all]/route.ts  # Better Auth handler
-│   │       ├── upload/route.ts         # Cloudinary upload
+│   │       ├── upload/route.ts         # Cloudinary upload + delete
+│   │       ├── media/route.ts          # Media library listing (GET)
 │   │       └── revalidate/route.ts     # Cache revalidation
 │   ├── components/
 │   │   ├── admin/
@@ -479,7 +480,7 @@ All admin routes (except login) require authentication.
 | `/admin/gallery` | `admin/(protected)/gallery/` | Server→Client | Manage gallery images |
 | `/admin/settings` | `admin/(protected)/settings/` | Server→Client | Site settings |
 | `/admin/messages` | `admin/(protected)/messages/page.tsx` | Server | Contact form submissions (force-dynamic) |
-| `/admin/media` | `admin/(protected)/media/page.tsx` | Client | Media manager |
+| `/admin/media` | `admin/(protected)/media/page.tsx` | Client | Media library: browse Cloudinary assets by folder, upload, delete |
 | `/admin/profile` | `admin/(protected)/profile/page.tsx` | Client | Profile page |
 
 ---
@@ -491,6 +492,7 @@ All admin routes (except login) require authentication.
 | `/api/auth/[...all]` | GET, POST | No | Better Auth handler (signup, signin, session, etc.) |
 | `/api/upload` | POST | Yes (ADMIN) | Upload image to Cloudinary |
 | `/api/upload` | DELETE | Yes (ADMIN) | Delete image from Cloudinary |
+| `/api/media` | GET | Yes (ADMIN) | List Cloudinary assets + folders for the Media Manager |
 | `/api/revalidate` | POST | Yes (ADMIN) | Revalidate Next.js cache paths |
 
 ### Upload API (`POST /api/upload`)
@@ -516,6 +518,39 @@ Returns:
 Accepts JSON body with `publicId`. Rate limited (10 req/min per user).
 
 Errors return `{ "error": "<message>" }` with appropriate HTTP status.
+
+### Media List API (`GET /api/media`)
+
+Returns the Cloudinary asset library for the Media Manager. Supports pagination via Cloudinary's `next_cursor` and optional folder filtering.
+
+Query parameters:
+- `folder` (optional): Cloudinary folder prefix to filter by (e.g. `maison`, `maison/gallery`). Omit to list all folders.
+- `cursor` (optional): `next_cursor` value from a previous response for pagination.
+- `max` (optional): Page size, capped at 100 (default 60).
+
+The endpoint runs `listImages` and `listFolders` in parallel; the response includes the full folder tree (root folders + one level of sub-folders) so the client can render folder filters.
+
+Returns:
+```json
+{
+  "assets": [
+    {
+      "publicId": "maison/gallery/abc123",
+      "url": "https://res.cloudinary.com/.../image/upload/...",
+      "format": "jpg",
+      "bytes": 123456,
+      "width": 1200,
+      "height": 1600,
+      "createdAt": "2026-09-01T10:00:00Z",
+      "folder": "maison/gallery"
+    }
+  ],
+  "nextCursor": "abc123xyz",
+  "folders": ["maison", "maison/about", "maison/gallery", "maison/products"]
+}
+```
+
+Errors return `{ "error": "<message>" }` with HTTP 401 (unauthenticated) or 500 (Cloudinary failure).
 
 ---
 
@@ -650,8 +685,9 @@ Uploads flow through the Next.js server:
 
 | File | Purpose |
 |---|---|
-| `src/lib/cloudinary.ts` | `uploadImage()`, `deleteImage()` helpers |
+| `src/lib/cloudinary.ts` | `uploadImage()`, `deleteImage()`, `listImages()`, `listFolders()` helpers |
 | `src/app/api/upload/route.ts` | Express-style upload API endpoint with validation + rate limiting |
+| `src/app/api/media/route.ts` | GET endpoint listing Cloudinary assets + folders for the Media Manager |
 | `src/components/admin/image-uploader.tsx` | Reusable client-side upload widget |
 | `src/lib/rate-limit.ts` | In-memory rate limiter used by upload API |
 
@@ -677,7 +713,7 @@ Configured in `next.config.ts` for Next.js `<Image>` component:
 |---|---|---|
 | Proxy (`proxy.ts`) | `auth.api.getSession()` + role check | All `/admin/*` routes (redirects if unauthorized) |
 | Server actions | `requireAdmin()` in each `"use server"` file | All mutating admin operations |
-| API routes | `auth.api.getSession()` + role check in each handler | `/api/upload`, `/api/revalidate` |
+| API routes | `auth.api.getSession()` + role check in each handler | `/api/upload`, `/api/media`, `/api/revalidate` |
 | Query helpers | None (protected by proxy — pages under `/admin/*` require auth) | Admin page data fetching |
 
 ### Role Enforcement

@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Maison — Fashion Catalog CMS
+
+A premium editorial-style fashion catalog with a public website and an admin panel for managing products, categories, gallery images, hero banners, and site settings.
+
+**Live:** [simple-phi-eight.vercel.app](https://simple-phi-eight.vercel.app)
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| UI | React 19, shadcn/ui, Tailwind CSS v4 |
+| Database | PostgreSQL (Neon serverless) |
+| ORM | Prisma 7 |
+| Auth | Better Auth (email/password, role-based) |
+| Storage | Cloudinary (images) |
+| Validation | Zod |
+| Deployment | Vercel |
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js v20+
+- A PostgreSQL database (e.g. [Neon](https://neon.tech))
+- A [Cloudinary](https://cloudinary.com) account
+
+### Install
 
 ```bash
+git clone <repo-url> && cd magazine-open
+npm install
+cp .env.example .env    # then fill in your credentials
+npx prisma migrate dev
+npx tsx scripts/seed.ts admin@maison.com admin123 Admin
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+DATABASE_URL="postgresql://..."          # Neon / PostgreSQL
+BETTER_AUTH_SECRET="<random-hex>"        # Session signing key
+BETTER_AUTH_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+CLOUDINARY_CLOUD_NAME="..."
+CLOUDINARY_API_KEY="..."
+CLOUDINARY_API_SECRET="..."
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Public
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Homepage with hero banner, featured products, about section, and gallery
+- Product catalog with categories, detail pages, and search
+- Editorial gallery grid
+- Contact form with spam protection
 
-## Deploy on Vercel
+### Admin (`/admin`)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Dashboard with stats and recent products
+- Product management (CRUD, image uploads, categories)
+- Category management (CRUD, slug routing)
+- Hero banner management (CRUD, reorder)
+- About section management
+- Gallery management (CRUD, reorder)
+- Media Manager — browse, upload, and delete Cloudinary assets by folder
+- Site settings (key-value store)
+- Contact message inbox
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Admin access:** Sign in at `/admin/login`. Users require the `ADMIN` role.
+
+---
+
+## Project Structure
+
+```
+magazine-open/
+├── proxy.ts                         # Admin auth proxy (Node.js runtime)
+├── prisma/
+│   └── schema.prisma                # Database schema
+├── scripts/
+│   └── seed.ts                      # Admin seed script
+├── src/
+│   ├── app/
+│   │   ├── (public)/                # Public pages
+│   │   ├── admin/(protected)/       # Admin pages
+│   │   └── api/
+│   │       ├── auth/[...all]/       # Better Auth handler
+│   │       ├── upload/              # Cloudinary upload + delete
+│   │       └── media/               # Media library listing
+│   ├── components/
+│   │   ├── admin/                   # Admin UI components
+│   │   ├── public/                  # Public header/footer
+│   │   ├── shared/                  # Loading, error, empty states
+│   │   └── ui/                      # shadcn primitives
+│   └── lib/
+│       ├── auth.ts                  # Server auth config
+│       ├── cloudinary.ts            # Upload, delete, list helpers
+│       ├── actions/                 # Server actions (7 modules)
+│       ├── queries/                 # Database queries
+│       └── validations/             # Zod schemas
+```
+
+---
+
+## Database
+
+12 models backed by PostgreSQL via Prisma 7 + Neon adapter:
+
+`User` · `Session` · `Account` · `VerificationToken` · `Category` · `Product` · `ProductImage` · `HeroBanner` · `AboutSection` · `GalleryImage` · `ContactMessage` · `Setting`
+
+---
+
+## Deployment
+
+Built for [Vercel](https://vercel.com):
+
+```bash
+npm run build
+```
+
+Or connect the repository to Vercel for automatic deploys on push. Ensure all environment variables are set in the Vercel project dashboard.
+
+---
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start dev server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+| `npx prisma migrate dev` | Run migrations (dev) |
+| `npx prisma migrate deploy` | Apply migrations (production) |
+| `npx prisma generate` | Regenerate Prisma client |
+| `npx tsx scripts/seed.ts <email> <password> <name>` | Create admin user |
+
+---
+
+## License
+
+Private — all rights reserved.
