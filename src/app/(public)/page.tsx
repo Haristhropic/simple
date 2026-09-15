@@ -19,10 +19,20 @@ export default async function HomePage() {
   const hero = heroBanners[0];
   const about = aboutSections[0];
 
+  const heroCta = (
+    <Link
+      href={hero?.ctaLink || "/products"}
+      className="inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-medium text-background transition-all hover:opacity-90"
+    >
+      {hero?.cta || "Explore Collection"}
+      <ArrowRight className="h-3.5 w-3.5" />
+    </Link>
+  );
+
   return (
     <>
-      <section className="relative grid min-h-[90dvh] grid-cols-1 lg:grid-cols-2">
-        <div className="flex flex-col justify-center px-6 py-20 lg:px-12">
+      <section className="relative grid min-h-[90dvh] grid-cols-1 grid-rows-[auto_1fr_auto] lg:grid-cols-2 lg:grid-rows-[1fr]">
+        <div className="flex flex-col justify-center px-6 py-12 lg:px-12 lg:py-16">
           <span className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
             {hero?.subtitle || "Spring Summer 2026"}
           </span>
@@ -32,15 +42,7 @@ export default async function HomePage() {
           <p className="mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
             {hero?.description || "A curated collection of timeless pieces, crafted with precision and designed to endure."}
           </p>
-          <div className="mt-8 flex gap-4">
-            <Link
-              href={hero?.ctaLink || "/products"}
-              className="inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-medium text-background transition-all hover:opacity-90"
-            >
-              {hero?.cta || "Explore Collection"}
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
+          <div className="mt-8 hidden gap-4 lg:flex">{heroCta}</div>
         </div>
 
         <div className="relative min-h-[50vh] lg:min-h-full">
@@ -53,6 +55,8 @@ export default async function HomePage() {
             sizes="(max-width: 1024px) 100vw, 50vw"
           />
         </div>
+
+        <div className="flex px-6 pt-8 pb-12 lg:hidden">{heroCta}</div>
       </section>
 
       {featuredProducts.length > 0 && (
