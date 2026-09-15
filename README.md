@@ -1,3 +1,8 @@
+## Identitas Praktikum
+- Nama: Rahmad Haris Abdillah
+- Kelas: 12 sija 1
+- Minggu: 3
+
 # Maison — Fashion Catalog CMS
 
 A premium editorial-style fashion catalog with a public website and an admin panel for managing products, categories, gallery images, hero banners, and site settings.
