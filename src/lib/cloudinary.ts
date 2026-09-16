@@ -10,6 +10,7 @@ export async function uploadImage(file: string, folder?: string) {
   return cloudinary.uploader.upload(file, {
     folder: folder || "maison",
     resource_type: "image",
+    format: "webp",
   });
 }
 
