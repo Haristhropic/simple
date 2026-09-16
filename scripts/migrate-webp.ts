@@ -6,6 +6,13 @@ const PREFIX = "maison";
 type Candidate = { publicId: string; fromFormat: string; fromUrl: string };
 type Result = Candidate & { toUrl: string | null; error: string | null };
 
+// Cloudinary's prefix match is loose: prefix "maison" also returns root assets
+// whose name merely begins with "Maison", plus the unrelated "maison-test/" folder.
+// Only assets that actually live under the app's own tree are migrated.
+function isAppAsset(folder: string): boolean {
+  return folder === PREFIX || folder.startsWith(`${PREFIX}/`);
+}
+
 async function main() {
   const { cloudinary, listImages } = await import("../src/lib/cloudinary");
   const { prisma } = await import("../src/lib/db");
@@ -16,6 +23,7 @@ async function main() {
     const page = await listImages({ folder: PREFIX, cursor, max: 100 });
     for (const asset of page.assets) {
       if (asset.format === "webp") continue;
+      if (!isAppAsset(asset.folder)) continue;
       candidates.push({
         publicId: asset.publicId,
         fromFormat: asset.format,
