@@ -1,8 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Plus } from "lucide-react";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
+import { ProductsTable } from "./products-table";
 
 export const metadata: Metadata = { title: "Products" };
 
@@ -11,6 +11,16 @@ export default async function AdminProductsPage() {
     include: { category: true, images: { take: 1, orderBy: { order: "asc" } } },
     orderBy: { createdAt: "desc" },
   });
+
+  const rows = products.map((product) => ({
+    id: product.id,
+    name: product.name,
+    price: product.price ? Number(product.price) : null,
+    status: product.status,
+    featured: product.featured,
+    categoryName: product.category.name,
+    imageUrl: product.images[0]?.url ?? null,
+  }));
 
   return (
     <div className="space-y-10">
@@ -28,68 +38,7 @@ export default async function AdminProductsPage() {
         </Link>
       </div>
 
-      <div className="rounded-xl border border-border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="px-5 py-3 text-left font-medium text-muted-foreground">Image</th>
-              <th className="px-5 py-3 text-left font-medium text-muted-foreground">Name</th>
-              <th className="px-5 py-3 text-left font-medium text-muted-foreground">Category</th>
-              <th className="px-5 py-3 text-left font-medium text-muted-foreground">Price</th>
-              <th className="px-5 py-3 text-left font-medium text-muted-foreground">Status</th>
-              <th className="px-5 py-3 text-right font-medium text-muted-foreground">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-5 py-8 text-center text-sm text-muted-foreground">
-                  No products yet.{' '}
-                  <Link href="/admin/products/new" className="underline hover:text-foreground">
-                    Add your first product
-                  </Link>
-                </td>
-              </tr>
-            ) : (
-              products.map((product) => (
-                <tr key={product.id} className="border-b border-border last:border-0">
-                  <td className="px-5 py-3">
-                    {product.images[0]?.url ? (
-                      <Image
-                        src={product.images[0].url}
-                        alt={product.name}
-                        width={48}
-                        height={48}
-                        className="h-12 w-12 rounded-lg object-cover ring-1 ring-foreground/10"
-                      />
-                    ) : (
-                      <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-muted-foreground ring-1 ring-foreground/10">
-                        —
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3 font-medium">{product.name}</td>
-                  <td className="px-5 py-3 text-muted-foreground">{product.category.name}</td>
-                  <td className="px-5 py-3">{product.price ? `$${Number(product.price).toLocaleString()}` : "—"}</td>
-                  <td className="px-5 py-3">
-                    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${product.status === "published" ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-600"}`}>
-                      {product.status}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    <Link
-                      href={`/admin/products/${product.id}/edit`}
-                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      Edit
-                    </Link>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ProductsTable products={rows} />
     </div>
   );
 }
