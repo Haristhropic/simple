@@ -50,6 +50,23 @@ export async function deleteGalleryImage(id: string) {
   revalidatePath("/gallery");
 }
 
+export async function bulkDeleteGalleryImages(ids: string[]) {
+  await requireAdmin();
+  if (ids.length === 0) return;
+  const images = await prisma.galleryImage.findMany({
+    where: { id: { in: ids } },
+    select: { publicId: true },
+  });
+  for (const img of images) {
+    if (img.publicId) {
+      await deleteImage(img.publicId).catch((e) => console.error("Failed to delete Cloudinary image:", e));
+    }
+  }
+  await prisma.galleryImage.deleteMany({ where: { id: { in: ids } } });
+  revalidatePath("/admin/gallery");
+  revalidatePath("/gallery");
+}
+
 export async function reorderGalleryImages(items: { id: string; order: number }[]) {
   await requireAdmin();
   for (const item of items) {

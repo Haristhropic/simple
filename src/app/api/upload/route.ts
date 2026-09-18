@@ -62,17 +62,25 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
-    const { publicId } = await request.json();
-    if (!publicId) {
+    const body = await request.json();
+    const publicIds: string[] = Array.isArray(body?.publicIds)
+      ? body.publicIds
+      : typeof body?.publicId === "string"
+        ? [body.publicId]
+        : [];
+
+    if (publicIds.length === 0) {
       return NextResponse.json({ error: "No publicId provided" }, { status: 400 });
     }
 
-    if (typeof publicId !== "string") {
+    if (!publicIds.every((id) => typeof id === "string" && id.length > 0)) {
       return NextResponse.json({ error: "Invalid publicId" }, { status: 400 });
     }
 
-    await deleteImage(publicId);
-    return NextResponse.json({ success: true });
+    for (const publicId of publicIds) {
+      await deleteImage(publicId);
+    }
+    return NextResponse.json({ success: true, deleted: publicIds.length });
   } catch (error) {
     console.error("Delete error:", error);
     return NextResponse.json({ error: "Delete failed" }, { status: 500 });

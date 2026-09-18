@@ -52,3 +52,22 @@ export async function deleteCategory(id: string) {
   revalidatePath("/categories");
   revalidatePath("/");
 }
+
+export async function bulkDeleteCategories(ids: string[]) {
+  await requireAdmin();
+  if (ids.length === 0) return;
+  const linked = await prisma.product.findMany({
+    where: { categoryId: { in: ids } },
+    select: { categoryId: true },
+    distinct: ["categoryId"],
+  });
+  if (linked.length > 0) {
+    throw new Error(
+      `Cannot delete: ${linked.length} selected categor${linked.length > 1 ? "ies have" : "y has"} linked products. Remove or reassign them first.`
+    );
+  }
+  await prisma.category.deleteMany({ where: { id: { in: ids } } });
+  revalidatePath("/admin/categories");
+  revalidatePath("/categories");
+  revalidatePath("/");
+}

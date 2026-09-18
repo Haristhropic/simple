@@ -53,6 +53,42 @@ export async function deleteProduct(id: string) {
   revalidatePath("/products");
 }
 
+export async function bulkDeleteProducts(ids: string[]) {
+  await requireAdmin();
+  if (ids.length === 0) return;
+  const images = await prisma.productImage.findMany({
+    where: { productId: { in: ids } },
+    select: { publicId: true },
+  });
+  for (const img of images) {
+    if (img.publicId) {
+      await deleteImage(img.publicId).catch((e) => console.error("Failed to delete Cloudinary image:", e));
+    }
+  }
+  await prisma.product.deleteMany({ where: { id: { in: ids } } });
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath("/");
+}
+
+export async function bulkUpdateProductStatus(ids: string[], status: string) {
+  await requireAdmin();
+  if (ids.length === 0) return;
+  await prisma.product.updateMany({ where: { id: { in: ids } }, data: { status } });
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath("/");
+}
+
+export async function bulkSetProductFeatured(ids: string[], featured: boolean) {
+  await requireAdmin();
+  if (ids.length === 0) return;
+  await prisma.product.updateMany({ where: { id: { in: ids } }, data: { featured } });
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath("/");
+}
+
 export async function updateProductImages(
   productId: string,
   images: { url: string; publicId: string; alt?: string; order?: number }[]
