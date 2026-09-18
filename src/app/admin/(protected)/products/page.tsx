@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Plus } from "lucide-react";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
@@ -31,6 +32,7 @@ export default async function AdminProductsPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
+              <th className="px-5 py-3 text-left font-medium text-muted-foreground">Image</th>
               <th className="px-5 py-3 text-left font-medium text-muted-foreground">Name</th>
               <th className="px-5 py-3 text-left font-medium text-muted-foreground">Category</th>
               <th className="px-5 py-3 text-left font-medium text-muted-foreground">Price</th>
@@ -41,7 +43,7 @@ export default async function AdminProductsPage() {
           <tbody>
             {products.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-5 py-8 text-center text-sm text-muted-foreground">
+                <td colSpan={6} className="px-5 py-8 text-center text-sm text-muted-foreground">
                   No products yet.{' '}
                   <Link href="/admin/products/new" className="underline hover:text-foreground">
                     Add your first product
@@ -51,6 +53,21 @@ export default async function AdminProductsPage() {
             ) : (
               products.map((product) => (
                 <tr key={product.id} className="border-b border-border last:border-0">
+                  <td className="px-5 py-3">
+                    {product.images[0]?.url ? (
+                      <Image
+                        src={product.images[0].url}
+                        alt={product.name}
+                        width={48}
+                        height={48}
+                        className="h-12 w-12 rounded-lg object-cover ring-1 ring-foreground/10"
+                      />
+                    ) : (
+                      <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-muted-foreground ring-1 ring-foreground/10">
+                        —
+                      </span>
+                    )}
+                  </td>
                   <td className="px-5 py-3 font-medium">{product.name}</td>
                   <td className="px-5 py-3 text-muted-foreground">{product.category.name}</td>
                   <td className="px-5 py-3">{product.price ? `$${Number(product.price).toLocaleString()}` : "—"}</td>
