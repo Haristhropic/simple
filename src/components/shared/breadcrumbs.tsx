@@ -30,7 +30,20 @@ const LABELS: Record<string, string> = {
   settings: "Settings",
 };
 
-function prettify(segment: string): string {
+const ADMIN_LABELS: Record<string, string> = {
+  products: "Products",
+  categories: "Categories",
+  hero: "Hero",
+  gallery: "Gallery",
+  about: "About",
+  media: "Media",
+  messages: "Messages",
+  settings: "Settings",
+  profile: "Profile",
+};
+
+function prettify(segment: string, parent?: string): string {
+  if (parent === "admin" && ADMIN_LABELS[segment]) return ADMIN_LABELS[segment];
   if (LABELS[segment]) return LABELS[segment];
   return segment
     .replace(/-/g, " ")
@@ -50,7 +63,7 @@ export function Breadcrumbs({ items, className = "" }: BreadcrumbsProps) {
       segments.forEach((segment, index) => {
         const isLast = index === segments.length - 1;
         built.push({
-          label: prettify(segment),
+          label: prettify(segment, segments[index - 1]),
           href: isLast
             ? undefined
             : `/${segments.slice(0, index + 1).join("/")}`,
