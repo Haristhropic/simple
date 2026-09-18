@@ -4,7 +4,6 @@ import { useState, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { updateCategory, deleteCategory } from "@/lib/actions";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import type { Category } from "@/generated/prisma/client";
@@ -45,7 +44,6 @@ export function CategoryEditForm({ category }: { category: Category }) {
 
       if (result && "id" in result) {
         setSuccess("Category updated successfully.");
-        toast.success("Category updated");
         router.refresh();
       } else {
         setError("Failed to update category");
@@ -66,7 +64,6 @@ export function CategoryEditForm({ category }: { category: Category }) {
     setDeleting(true);
     try {
       await deleteCategory(category.id);
-      toast.success("Category deleted");
       startTransition(() => router.push("/admin/categories"));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete");

@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { toast } from "sonner";
 import { createProduct, updateProduct, updateProductImages, deleteProduct } from "@/lib/actions";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import type { Category, ProductImage } from "@/generated/prisma/client";
@@ -66,7 +65,6 @@ export function ProductForm({ categories, product }: Props) {
     setDeleting(true);
     try {
       await deleteProduct(product.id);
-      toast.success("Product deleted");
       startTransition(() => router.push("/admin/products"));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete");
@@ -108,7 +106,6 @@ export function ProductForm({ categories, product }: Props) {
           );
         }
         setLoading(false);
-        toast.success(isEdit ? "Product updated" : "Product created");
         startTransition(() => router.push("/admin/products"));
       } else {
         setError("Operation failed");

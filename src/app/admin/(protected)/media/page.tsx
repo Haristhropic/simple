@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { toast } from "sonner";
 import { FolderOpen, HardDrive, ImageIcon, Loader2, Plus, Trash2, X } from "lucide-react";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import { cn } from "@/lib/utils";
@@ -26,6 +25,7 @@ export default function AdminMediaPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
   const [showUploader, setShowUploader] = useState(false);
   const [uploadFolder, setUploadFolder] = useState("maison");
 
@@ -90,6 +90,7 @@ export default function AdminMediaPage() {
     setFilter(folder);
     setLoading(true);
     setError("");
+    setActionMessage("");
   }
 
   function loadMore() {
@@ -109,9 +110,9 @@ export default function AdminMediaPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to delete");
       setAssets((prev) => prev.filter((a) => a.publicId !== asset.publicId));
-      toast.success("Image deleted");
+      setActionMessage("Image deleted.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete");
+      setError(err instanceof Error ? err.message : "Failed to delete");
     }
     setDeleting(null);
   }
@@ -145,6 +146,9 @@ export default function AdminMediaPage() {
 
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-600">{error}</div>
+      )}
+      {actionMessage && (
+        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-2.5 text-sm text-green-600">{actionMessage}</div>
       )}
 
       {showUploader && (
