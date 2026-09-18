@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { FolderOpen, HardDrive, ImageIcon, Loader2, Plus, Trash2, X } from "lucide-react";
 import { ImageUploader } from "@/components/admin/image-uploader";
+import { useSelection } from "@/components/admin/use-selection";
+import { SelectionToolbar, BulkActionButton } from "@/components/admin/selection-toolbar";
 import { cn } from "@/lib/utils";
 import type { CloudinaryAsset } from "@/lib/cloudinary";
 
@@ -24,8 +26,13 @@ export default function AdminMediaPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
+  const { selected, isSelected, toggle, toggleAll, clear } = useSelection();
+
+  const allIds = assets.map((a) => a.publicId);
+  const allSelected = assets.length > 0 && selected.length === assets.length;
   const [showUploader, setShowUploader] = useState(false);
   const [uploadFolder, setUploadFolder] = useState("maison");
 
@@ -91,6 +98,7 @@ export default function AdminMediaPage() {
     setLoading(true);
     setError("");
     setActionMessage("");
+    clear();
   }
 
   function loadMore() {
@@ -116,6 +124,28 @@ export default function AdminMediaPage() {
     setDeleting(null);
   }
 
+  async function handleBulkDelete() {
+    const ids = selected;
+    setBusy(true);
+    setError("");
+    setActionMessage("");
+    try {
+      const res = await fetch("/api/upload", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publicIds: ids }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete");
+      setAssets((prev) => prev.filter((a) => !ids.includes(a.publicId)));
+      setActionMessage(`${ids.length} image${ids.length > 1 ? "s" : ""} deleted.`);
+      clear();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete");
+    }
+    setBusy(false);
+  }
+
   async function handleUpload() {
     setShowUploader(false);
     await load(true);
@@ -134,13 +164,24 @@ export default function AdminMediaPage() {
           <h1 className="text-2xl font-medium tracking-tighter">Media Manager</h1>
           <p className="mt-1 text-sm text-muted-foreground">Browse every image stored in Cloudinary.</p>
         </div>
-        <button
-          onClick={() => setShowUploader((v) => !v)}
-          className="inline-flex h-10 items-center gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background transition-all hover:opacity-90"
-        >
-          {showUploader ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {showUploader ? "Close" : "Upload"}
-        </button>
+        <div className="flex items-center gap-4">
+          {assets.length > 0 && (
+            <button
+              type="button"
+              onClick={() => toggleAll(allIds)}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {allSelected ? "Clear selection" : "Select all"}
+            </button>
+          )}
+          <button
+            onClick={() => setShowUploader((v) => !v)}
+            className="inline-flex h-10 items-center gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background transition-all hover:opacity-90"
+          >
+            {showUploader ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {showUploader ? "Close" : "Upload"}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -149,6 +190,13 @@ export default function AdminMediaPage() {
       {actionMessage && (
         <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-2.5 text-sm text-green-600">{actionMessage}</div>
       )}
+
+      <SelectionToolbar count={selected.length} onClear={clear}>
+        <BulkActionButton onClick={handleBulkDelete} disabled={busy} tone="danger">
+          {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+          Delete
+        </BulkActionButton>
+      </SelectionToolbar>
 
       {showUploader && (
         <div className="max-w-sm space-y-3 rounded-xl border border-border p-5">
@@ -224,8 +272,22 @@ export default function AdminMediaPage() {
         <>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {assets.map((img) => (
-              <div key={img.publicId} className="group relative aspect-square overflow-hidden rounded-xl bg-zinc-100">
+              <div
+                key={img.publicId}
+                className={`group relative aspect-square overflow-hidden rounded-xl bg-zinc-100 ring-2 transition-all ${
+                  isSelected(img.publicId) ? "ring-foreground" : "ring-transparent"
+                }`}
+              >
                 <Image src={img.url} alt={img.publicId} fill className="object-cover" sizes="(max-width: 768px) 50vw, 20vw" />
+                <label className="absolute left-2 top-2 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-md bg-background/90 shadow-sm">
+                  <input
+                    type="checkbox"
+                    aria-label={`Select ${img.publicId}`}
+                    checked={isSelected(img.publicId)}
+                    onChange={() => toggle(img.publicId)}
+                    className="rounded border-input"
+                  />
+                </label>
                 <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/70 to-transparent p-3 pt-8 opacity-0 transition-all group-hover:opacity-100">
                   <div className="min-w-0">
                     <p className="truncate text-xs font-medium text-white">
