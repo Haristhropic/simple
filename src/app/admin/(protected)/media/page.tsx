@@ -99,7 +99,6 @@ export default function AdminMediaPage() {
   }
 
   async function handleDelete(asset: CloudinaryAsset) {
-    if (!confirm(`Delete this image?\n\n${asset.publicId}`)) return;
     setDeleting(asset.publicId);
     try {
       const res = await fetch("/api/upload", {

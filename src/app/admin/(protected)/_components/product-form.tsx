@@ -60,7 +60,6 @@ export function ProductForm({ categories, product }: Props) {
   }
 
   async function handleDelete() {
-    if (!confirm("Delete this product?")) return;
     if (!product) return;
     setDeleting(true);
     try {

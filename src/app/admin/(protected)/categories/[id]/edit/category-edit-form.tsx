@@ -60,7 +60,6 @@ export function CategoryEditForm({ category }: { category: Category }) {
   }
 
   async function handleDelete() {
-    if (!confirm("Delete this category?")) return;
     setDeleting(true);
     try {
       await deleteCategory(category.id);
