@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Trash2 } from "lucide-react";
-import { deleteContactMessage } from "@/lib/actions";
+import { bulkDeleteContactMessages, deleteContactMessage } from "@/lib/actions";
+import { useSelection } from "@/components/admin/use-selection";
+import { SelectionToolbar, BulkActionButton } from "@/components/admin/selection-toolbar";
 
 export function MessagesClient({
   messages: initial,
@@ -20,7 +22,13 @@ export function MessagesClient({
   const router = useRouter();
   const [messages, setMessages] = useState(initial);
   const [loading, setLoading] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
+  const { selected, isSelected, toggle, toggleAll, clear } = useSelection();
+
+  const allIds = messages.map((m) => m.id);
+  const allSelected = messages.length > 0 && selected.length === messages.length;
 
   async function remove(id: string) {
     setLoading(id);
@@ -35,11 +43,39 @@ export function MessagesClient({
     setLoading(null);
   }
 
+  async function handleBulkDelete() {
+    const ids = selected;
+    setBusy(true);
+    setError("");
+    setActionMessage("");
+    try {
+      await bulkDeleteContactMessages(ids);
+      setMessages((prev) => prev.filter((m) => !ids.includes(m.id)));
+      setActionMessage(`${ids.length} message${ids.length > 1 ? "s" : ""} deleted.`);
+      clear();
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Bulk delete failed");
+    }
+    setBusy(false);
+  }
+
   return (
     <div className="space-y-10">
-      <div>
-        <h1 className="text-2xl font-medium tracking-tighter">Messages</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Contact form submissions.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-medium tracking-tighter">Messages</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Contact form submissions.</p>
+        </div>
+        {messages.length > 0 && (
+          <button
+            type="button"
+            onClick={() => toggleAll(allIds)}
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {allSelected ? "Clear selection" : "Select all"}
+          </button>
+        )}
       </div>
 
       {error && (
@@ -47,17 +83,43 @@ export function MessagesClient({
           {error}
         </div>
       )}
+      {actionMessage && (
+        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-2.5 text-sm text-green-600">
+          {actionMessage}
+        </div>
+      )}
+
+      <SelectionToolbar count={selected.length} onClear={clear}>
+        <BulkActionButton onClick={handleBulkDelete} disabled={busy} tone="danger">
+          {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+          Delete
+        </BulkActionButton>
+      </SelectionToolbar>
 
       {messages.length === 0 ? (
         <p className="py-10 text-center text-sm text-muted-foreground">No messages yet.</p>
       ) : (
         <div className="space-y-4">
           {messages.map((msg) => (
-            <div key={msg.id} className="rounded-xl border border-border p-6">
+            <div
+              key={msg.id}
+              className={`rounded-xl border p-6 transition-colors ${
+                isSelected(msg.id) ? "border-foreground" : "border-border"
+              }`}
+            >
               <div className="mb-3 flex items-start justify-between">
-                <div>
-                  <p className="font-medium">{msg.name}</p>
-                  <p className="text-sm text-muted-foreground">{msg.email}</p>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    aria-label={`Select message from ${msg.name}`}
+                    checked={isSelected(msg.id)}
+                    onChange={() => toggle(msg.id)}
+                    className="mt-1 rounded border-input"
+                  />
+                  <div>
+                    <p className="font-medium">{msg.name}</p>
+                    <p className="text-sm text-muted-foreground">{msg.email}</p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground">
