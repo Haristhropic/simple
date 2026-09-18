@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, startTransition } from "react";
+import { useState, useRef, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -20,9 +20,10 @@ export function CategoryEditForm({ category }: { category: Category }) {
   const [success, setSuccess] = useState("");
   const [slug, setSlug] = useState(category.slug);
   const [upload, setUpload] = useState<{ url: string; publicId: string } | null>(null);
+  const slugTouched = useRef(false);
 
   function handleNameChange(value: string) {
-    if (!slug || slug === slugify(slug)) {
+    if (!slugTouched.current) {
       setSlug(slugify(value));
     }
   }
@@ -90,7 +91,7 @@ export function CategoryEditForm({ category }: { category: Category }) {
         </div>
         <div className="space-y-2">
           <label htmlFor="slug" className="text-sm font-medium">Slug</label>
-          <input id="slug" name="slug" type="text" required value={slug} onChange={(e) => setSlug(e.target.value)} className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm" />
+          <input id="slug" name="slug" type="text" required value={slug} onChange={(e) => { slugTouched.current = true; setSlug(e.target.value); }} className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm" />
         </div>
         <div className="space-y-2">
           <label htmlFor="description" className="text-sm font-medium">Description</label>

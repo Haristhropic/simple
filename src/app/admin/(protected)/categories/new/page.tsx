@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { createCategory } from "@/lib/actions";
@@ -15,9 +15,10 @@ export default function NewCategoryPage() {
   const [error, setError] = useState("");
   const [slug, setSlug] = useState("");
   const [upload, setUpload] = useState<{ url: string; publicId: string } | null>(null);
+  const slugTouched = useRef(false);
 
   function handleNameChange(value: string) {
-    if (!slug || slug === slugify(slug)) {
+    if (!slugTouched.current) {
       setSlug(slugify(value));
     }
   }
@@ -68,7 +69,7 @@ export default function NewCategoryPage() {
         </div>
         <div className="space-y-2">
           <label htmlFor="slug" className="text-sm font-medium">Slug</label>
-          <input id="slug" name="slug" type="text" required value={slug} onChange={(e) => setSlug(e.target.value)} className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm" placeholder="category-slug" />
+          <input id="slug" name="slug" type="text" required value={slug} onChange={(e) => { slugTouched.current = true; setSlug(e.target.value); }} className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm" placeholder="category-slug" />
         </div>
         <div className="space-y-2">
           <label htmlFor="description" className="text-sm font-medium">Description</label>

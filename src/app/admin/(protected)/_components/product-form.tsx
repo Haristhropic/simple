@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, startTransition } from "react";
+import { useState, useRef, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
@@ -39,11 +39,12 @@ export function ProductForm({ categories, product }: Props) {
   const [error, setError] = useState("");
   const [slug, setSlug] = useState(product?.slug ?? "");
   const [productImages, setProductImages] = useState<ProductImage[]>(product?.images ?? []);
+  const slugTouched = useRef(false);
   const isEdit = !!product;
 
   function handleNameChange(value: string) {
     if (isEdit) return;
-    if (!slug || slug === slugify(slug)) {
+    if (!slugTouched.current) {
       setSlug(slugify(value));
     }
   }
@@ -151,7 +152,7 @@ export function ProductForm({ categories, product }: Props) {
 
         <div className="space-y-2">
           <label htmlFor="slug" className="text-sm font-medium">Slug</label>
-          <input id="slug" name="slug" type="text" required value={slug} onChange={(e) => setSlug(e.target.value)} className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm" placeholder="product-slug" />
+          <input id="slug" name="slug" type="text" required value={slug} onChange={(e) => { slugTouched.current = true; setSlug(e.target.value); }} className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm" placeholder="product-slug" />
         </div>
 
         <div className="space-y-2">
