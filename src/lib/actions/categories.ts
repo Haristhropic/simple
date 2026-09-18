@@ -21,7 +21,11 @@ export async function createCategory(data: unknown) {
     input.slug = input.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   }
   const parsed = categorySchema.parse(input);
-  return prisma.category.create({ data: parsed });
+  const category = await prisma.category.create({ data: parsed });
+  revalidatePath("/admin/categories");
+  revalidatePath("/categories");
+  revalidatePath("/");
+  return category;
 }
 
 export async function updateCategory(id: string, data: unknown) {
@@ -29,7 +33,9 @@ export async function updateCategory(id: string, data: unknown) {
   const parsed = categoryUpdateSchema.parse(data);
   const category = await prisma.category.update({ where: { id }, data: parsed });
   revalidatePath("/admin/categories");
+  revalidatePath("/categories");
   revalidatePath(`/categories/${category.slug}`);
+  revalidatePath("/");
   return category;
 }
 
@@ -44,4 +50,5 @@ export async function deleteCategory(id: string) {
   await prisma.category.delete({ where: { id } });
   revalidatePath("/admin/categories");
   revalidatePath("/categories");
+  revalidatePath("/");
 }

@@ -23,6 +23,9 @@ export async function createProduct(data: unknown) {
   }
   const parsed = productSchema.parse(input);
   const product = await prisma.product.create({ data: parsed });
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath("/");
   return { ...product, price: product.price ? Number(product.price) : null };
 }
 
@@ -31,7 +34,9 @@ export async function updateProduct(id: string, data: unknown) {
   const parsed = productUpdateSchema.parse(data);
   const product = await prisma.product.update({ where: { id }, data: parsed });
   revalidatePath("/admin/products");
+  revalidatePath("/products");
   revalidatePath(`/products/${product.slug}`);
+  revalidatePath("/");
   return { ...product, price: product.price ? Number(product.price) : null };
 }
 
@@ -60,7 +65,12 @@ export async function updateProductImages(
     }
   }
   await prisma.productImage.deleteMany({ where: { productId } });
-  return prisma.productImage.createMany({
+  const result = await prisma.productImage.createMany({
     data: images.map((img) => ({ ...img, productId, order: img.order ?? 0 })),
   });
+  const product = await prisma.product.findUnique({ where: { id: productId }, select: { slug: true } });
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  if (product) revalidatePath(`/products/${product.slug}`);
+  return result;
 }
