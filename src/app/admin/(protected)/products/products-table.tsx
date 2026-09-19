@@ -107,7 +107,7 @@ export function ProductsTable({ products: initial }: { products: ProductRow[] })
                   aria-label="Select all products"
                   checked={allSelected}
                   onChange={() => toggleAll(allIds)}
-                  className="rounded border-input"
+                  className="size-4 shrink-0 rounded-[4px] border border-border bg-background"
                 />
               </th>
               <th className="px-5 py-3 text-left font-medium text-muted-foreground">Image</th>
@@ -140,7 +140,7 @@ export function ProductsTable({ products: initial }: { products: ProductRow[] })
                       aria-label={`Select ${product.name}`}
                       checked={isSelected(product.id)}
                       onChange={() => toggle(product.id)}
-                      className="rounded border-input"
+                      className="size-4 shrink-0 rounded-[4px] border border-border bg-background"
                     />
                   </td>
                   <td className="px-5 py-3">
@@ -167,7 +167,7 @@ export function ProductsTable({ products: initial }: { products: ProductRow[] })
                     )}
                   </td>
                   <td className="px-5 py-3 text-muted-foreground">{product.categoryName}</td>
-                  <td className="px-5 py-3">{product.price ? `$${product.price.toLocaleString()}` : "—"}</td>
+                  <td className="px-5 py-3">{product.price ? `$${product.price.toLocaleString("en-US")}` : "—"}</td>
                   <td className="px-5 py-3">
                     <span
                       className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${

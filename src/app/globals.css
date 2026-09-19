@@ -127,6 +127,10 @@
   html {
     @apply font-sans;
   }
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--foreground);
+  }
   button:not(:disabled),
   [role="button"]:not(:disabled),
   summary,

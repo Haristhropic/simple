@@ -167,7 +167,7 @@ export function HeroForm({ banners: initial }: { banners: HeroBanner[] }) {
                   aria-label={`Select ${banner.title}`}
                   checked={isSelected(banner.id)}
                   onChange={() => toggle(banner.id)}
-                  className="rounded border-input"
+                  className="size-4 shrink-0 rounded-[4px] border border-border bg-background"
                 />
                 Select
               </label>
@@ -203,7 +203,7 @@ export function HeroForm({ banners: initial }: { banners: HeroBanner[] }) {
 
               <div className="mt-4 flex items-center justify-between">
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" name="active" defaultChecked={banner.active} className="rounded border-input" />
+                  <input type="checkbox" name="active" defaultChecked={banner.active} className="size-4 shrink-0 rounded-[4px] border border-border bg-background" />
                   <span className="text-sm">Active</span>
                 </label>
                 <div className="flex items-center gap-3">

@@ -114,7 +114,7 @@ export function MessagesClient({
                     aria-label={`Select message from ${msg.name}`}
                     checked={isSelected(msg.id)}
                     onChange={() => toggle(msg.id)}
-                    className="mt-1 rounded border-input"
+                    className="mt-1 size-4 shrink-0 rounded-[4px] border border-border bg-background"
                   />
                   <div>
                     <p className="font-medium">{msg.name}</p>

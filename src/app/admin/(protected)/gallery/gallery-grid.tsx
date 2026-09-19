@@ -131,7 +131,7 @@ export function GalleryGrid({ images: initial }: { images: GalleryImage[] }) {
                 aria-label={`Select ${img.alt}`}
                 checked={isSelected(img.id)}
                 onChange={() => toggle(img.id)}
-                className="rounded border-input"
+                className="size-4 shrink-0 rounded-[4px] border border-border bg-background"
               />
             </label>
             <div className="absolute inset-0 flex items-end justify-center bg-black/0 p-3 opacity-0 transition-all group-hover:bg-black/20 group-hover:opacity-100">

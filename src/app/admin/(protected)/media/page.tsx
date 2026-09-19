@@ -285,7 +285,7 @@ export default function AdminMediaPage() {
                     aria-label={`Select ${img.publicId}`}
                     checked={isSelected(img.publicId)}
                     onChange={() => toggle(img.publicId)}
-                    className="rounded border-input"
+                    className="size-4 shrink-0 rounded-[4px] border border-border bg-background"
                   />
                 </label>
                 <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/70 to-transparent p-3 pt-8 opacity-0 transition-all group-hover:opacity-100">

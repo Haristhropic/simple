@@ -195,11 +195,11 @@ export function ProductForm({ categories, product }: Props) {
 
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-2">
-            <input type="checkbox" name="featured" defaultChecked={product?.featured ?? false} className="rounded border-input" />
+            <input type="checkbox" name="featured" defaultChecked={product?.featured ?? false} className="size-4 shrink-0 rounded-[4px] border border-border bg-background" />
             <span className="text-sm">Featured product</span>
           </label>
           <label className="flex items-center gap-2">
-            <input type="checkbox" name="published" defaultChecked={product?.status === "published" || !product} className="rounded border-input" />
+            <input type="checkbox" name="published" defaultChecked={product?.status === "published" || !product} className="size-4 shrink-0 rounded-[4px] border border-border bg-background" />
             <span className="text-sm">Published</span>
           </label>
         </div>

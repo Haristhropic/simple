@@ -71,7 +71,7 @@ export function CategoriesTable({ categories: initial }: { categories: CategoryR
                   aria-label="Select all categories"
                   checked={allSelected}
                   onChange={() => toggleAll(allIds)}
-                  className="rounded border-input"
+                  className="size-4 shrink-0 rounded-[4px] border border-border bg-background"
                 />
               </th>
               <th className="px-5 py-3 text-left font-medium text-muted-foreground">Image</th>
@@ -103,7 +103,7 @@ export function CategoriesTable({ categories: initial }: { categories: CategoryR
                       aria-label={`Select ${cat.name}`}
                       checked={isSelected(cat.id)}
                       onChange={() => toggle(cat.id)}
-                      className="rounded border-input"
+                      className="size-4 shrink-0 rounded-[4px] border border-border bg-background"
                     />
                   </td>
                   <td className="px-5 py-3">
