@@ -30,7 +30,29 @@ const LABELS: Record<string, string> = {
   settings: "Settings",
 };
 
-function prettify(segment: string): string {
+const ADMIN_LABELS: Record<string, string> = {
+  products: "Products",
+  categories: "Categories",
+  hero: "Hero",
+  gallery: "Gallery",
+  about: "About",
+  media: "Media",
+  messages: "Messages",
+  settings: "Settings",
+  profile: "Profile",
+};
+
+const STATIC_SEGMENTS = new Set<string>([
+  ...Object.keys(LABELS),
+  ...Object.keys(ADMIN_LABELS),
+  "new",
+  "analytics",
+  "login",
+  "edit",
+]);
+
+function prettify(segment: string, parent?: string): string {
+  if (parent === "admin" && ADMIN_LABELS[segment]) return ADMIN_LABELS[segment];
   if (LABELS[segment]) return LABELS[segment];
   return segment
     .replace(/-/g, " ")
@@ -50,8 +72,8 @@ export function Breadcrumbs({ items, className = "" }: BreadcrumbsProps) {
       segments.forEach((segment, index) => {
         const isLast = index === segments.length - 1;
         built.push({
-          label: prettify(segment),
-          href: isLast
+          label: prettify(segment, segments[index - 1]),
+          href: isLast || !STATIC_SEGMENTS.has(segment)
             ? undefined
             : `/${segments.slice(0, index + 1).join("/")}`,
         });
@@ -63,14 +85,17 @@ export function Breadcrumbs({ items, className = "" }: BreadcrumbsProps) {
 
   return (
     <nav aria-label="Breadcrumb" className={`pt-6 ${className}`}>
-      <ol className="flex flex-wrap items-center gap-2 text-sm tracking-wide text-muted-foreground">
+      <ol className="flex flex-wrap items-center gap-y-2 text-sm tracking-wide text-muted-foreground">
         {crumbs.map((crumb, index) => {
           const isLast = index === crumbs.length - 1;
           return (
-            <li key={`${crumb.label}-${index}`} className="flex items-center gap-2">
+            <li key={`${crumb.label}-${index}`} className="flex items-center">
               {index > 0 && (
-                <span aria-hidden="true" className="text-xs opacity-40">
-                  ›
+                <span
+                  aria-hidden="true"
+                  className="mx-2 select-none font-mono text-xs text-muted-foreground/50"
+                >
+                  /
                 </span>
               )}
               {isLast || !crumb.href ? (
@@ -80,7 +105,7 @@ export function Breadcrumbs({ items, className = "" }: BreadcrumbsProps) {
               ) : (
                 <Link
                   href={crumb.href}
-                  className="relative transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-[-2px] after:h-px after:origin-left after:scale-x-0 after:bg-foreground after:transition-transform after:duration-200 hover:text-foreground hover:after:scale-x-100"
+                  className="transition-colors duration-150 hover:text-foreground"
                 >
                   {crumb.label}
                 </Link>

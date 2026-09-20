@@ -134,7 +134,7 @@ export function AboutForm({ sections: initial }: { sections: AboutSection[] }) {
 
               <div className="mt-4 flex items-center justify-between">
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" name="active" defaultChecked={section.active} className="rounded border-input" />
+                  <input type="checkbox" name="active" defaultChecked={section.active} className="size-4 shrink-0 rounded-[4px] border border-border bg-background" />
                   <span className="text-sm">Active</span>
                 </label>
                 <div className="flex items-center gap-3">

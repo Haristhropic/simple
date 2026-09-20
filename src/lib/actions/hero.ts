@@ -41,6 +41,23 @@ export async function deleteHeroBanner(id: string) {
   revalidatePath("/");
 }
 
+export async function bulkDeleteHeroBanners(ids: string[]) {
+  await requireAdmin();
+  if (ids.length === 0) return;
+  const banners = await prisma.heroBanner.findMany({
+    where: { id: { in: ids } },
+    select: { imagePublicId: true },
+  });
+  for (const banner of banners) {
+    if (banner.imagePublicId) {
+      await deleteImage(banner.imagePublicId).catch((e) => console.error("Failed to delete Cloudinary image:", e));
+    }
+  }
+  await prisma.heroBanner.deleteMany({ where: { id: { in: ids } } });
+  revalidatePath("/admin/hero");
+  revalidatePath("/");
+}
+
 export async function reorderHeroBanners(items: { id: string; order: number }[]) {
   await requireAdmin();
   for (const item of items) {

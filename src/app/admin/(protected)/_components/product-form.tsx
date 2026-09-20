@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, startTransition } from "react";
+import { useState, useRef, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { toast } from "sonner";
 import { createProduct, updateProduct, updateProductImages, deleteProduct } from "@/lib/actions";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import type { Category, ProductImage } from "@/generated/prisma/client";
@@ -40,11 +39,12 @@ export function ProductForm({ categories, product }: Props) {
   const [error, setError] = useState("");
   const [slug, setSlug] = useState(product?.slug ?? "");
   const [productImages, setProductImages] = useState<ProductImage[]>(product?.images ?? []);
+  const slugTouched = useRef(false);
   const isEdit = !!product;
 
   function handleNameChange(value: string) {
     if (isEdit) return;
-    if (!slug || slug === slugify(slug)) {
+    if (!slugTouched.current) {
       setSlug(slugify(value));
     }
   }
@@ -61,12 +61,10 @@ export function ProductForm({ categories, product }: Props) {
   }
 
   async function handleDelete() {
-    if (!confirm("Delete this product?")) return;
     if (!product) return;
     setDeleting(true);
     try {
       await deleteProduct(product.id);
-      toast.success("Product deleted");
       startTransition(() => router.push("/admin/products"));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete");
@@ -108,7 +106,6 @@ export function ProductForm({ categories, product }: Props) {
           );
         }
         setLoading(false);
-        toast.success(isEdit ? "Product updated" : "Product created");
         startTransition(() => router.push("/admin/products"));
       } else {
         setError("Operation failed");
@@ -155,7 +152,7 @@ export function ProductForm({ categories, product }: Props) {
 
         <div className="space-y-2">
           <label htmlFor="slug" className="text-sm font-medium">Slug</label>
-          <input id="slug" name="slug" type="text" required value={slug} onChange={(e) => setSlug(e.target.value)} className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm" placeholder="product-slug" />
+          <input id="slug" name="slug" type="text" required value={slug} onChange={(e) => { slugTouched.current = true; setSlug(e.target.value); }} className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm" placeholder="product-slug" />
         </div>
 
         <div className="space-y-2">
@@ -198,11 +195,11 @@ export function ProductForm({ categories, product }: Props) {
 
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-2">
-            <input type="checkbox" name="featured" defaultChecked={product?.featured ?? false} className="rounded border-input" />
+            <input type="checkbox" name="featured" defaultChecked={product?.featured ?? false} className="size-4 shrink-0 rounded-[4px] border border-border bg-background" />
             <span className="text-sm">Featured product</span>
           </label>
           <label className="flex items-center gap-2">
-            <input type="checkbox" name="published" defaultChecked={product?.status === "published" || !product} className="rounded border-input" />
+            <input type="checkbox" name="published" defaultChecked={product?.status === "published" || !product} className="size-4 shrink-0 rounded-[4px] border border-border bg-background" />
             <span className="text-sm">Published</span>
           </label>
         </div>

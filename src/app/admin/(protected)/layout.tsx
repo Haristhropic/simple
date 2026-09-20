@@ -1,4 +1,3 @@
-import { Toaster } from "sonner";
 import { AdminSidebar } from "@/components/admin/sidebar";
 import { AdminHeader } from "@/components/admin/header";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
@@ -10,7 +9,6 @@ export default function AdminProtectedLayout({
 }) {
   return (
     <div className="flex min-h-dvh">
-      <Toaster richColors />
       <AdminSidebar />
       <div className="flex flex-1 flex-col">
         <AdminHeader />

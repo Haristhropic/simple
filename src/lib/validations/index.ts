@@ -4,3 +4,4 @@ export * from "./hero";
 export * from "./about";
 export * from "./settings";
 export * from "./contact";
+export * from "./analytics";

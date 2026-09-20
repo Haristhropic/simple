@@ -23,6 +23,9 @@ export async function createProduct(data: unknown) {
   }
   const parsed = productSchema.parse(input);
   const product = await prisma.product.create({ data: parsed });
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath("/");
   return { ...product, price: product.price ? Number(product.price) : null };
 }
 
@@ -31,7 +34,9 @@ export async function updateProduct(id: string, data: unknown) {
   const parsed = productUpdateSchema.parse(data);
   const product = await prisma.product.update({ where: { id }, data: parsed });
   revalidatePath("/admin/products");
+  revalidatePath("/products");
   revalidatePath(`/products/${product.slug}`);
+  revalidatePath("/");
   return { ...product, price: product.price ? Number(product.price) : null };
 }
 
@@ -48,6 +53,42 @@ export async function deleteProduct(id: string) {
   revalidatePath("/products");
 }
 
+export async function bulkDeleteProducts(ids: string[]) {
+  await requireAdmin();
+  if (ids.length === 0) return;
+  const images = await prisma.productImage.findMany({
+    where: { productId: { in: ids } },
+    select: { publicId: true },
+  });
+  for (const img of images) {
+    if (img.publicId) {
+      await deleteImage(img.publicId).catch((e) => console.error("Failed to delete Cloudinary image:", e));
+    }
+  }
+  await prisma.product.deleteMany({ where: { id: { in: ids } } });
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath("/");
+}
+
+export async function bulkUpdateProductStatus(ids: string[], status: string) {
+  await requireAdmin();
+  if (ids.length === 0) return;
+  await prisma.product.updateMany({ where: { id: { in: ids } }, data: { status } });
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath("/");
+}
+
+export async function bulkSetProductFeatured(ids: string[], featured: boolean) {
+  await requireAdmin();
+  if (ids.length === 0) return;
+  await prisma.product.updateMany({ where: { id: { in: ids } }, data: { featured } });
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath("/");
+}
+
 export async function updateProductImages(
   productId: string,
   images: { url: string; publicId: string; alt?: string; order?: number }[]
@@ -60,7 +101,12 @@ export async function updateProductImages(
     }
   }
   await prisma.productImage.deleteMany({ where: { productId } });
-  return prisma.productImage.createMany({
+  const result = await prisma.productImage.createMany({
     data: images.map((img) => ({ ...img, productId, order: img.order ?? 0 })),
   });
+  const product = await prisma.product.findUnique({ where: { id: productId }, select: { slug: true } });
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  if (product) revalidatePath(`/products/${product.slug}`);
+  return result;
 }

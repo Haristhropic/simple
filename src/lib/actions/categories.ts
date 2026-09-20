@@ -21,7 +21,11 @@ export async function createCategory(data: unknown) {
     input.slug = input.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   }
   const parsed = categorySchema.parse(input);
-  return prisma.category.create({ data: parsed });
+  const category = await prisma.category.create({ data: parsed });
+  revalidatePath("/admin/categories");
+  revalidatePath("/categories");
+  revalidatePath("/");
+  return category;
 }
 
 export async function updateCategory(id: string, data: unknown) {
@@ -29,7 +33,9 @@ export async function updateCategory(id: string, data: unknown) {
   const parsed = categoryUpdateSchema.parse(data);
   const category = await prisma.category.update({ where: { id }, data: parsed });
   revalidatePath("/admin/categories");
+  revalidatePath("/categories");
   revalidatePath(`/categories/${category.slug}`);
+  revalidatePath("/");
   return category;
 }
 
@@ -44,4 +50,24 @@ export async function deleteCategory(id: string) {
   await prisma.category.delete({ where: { id } });
   revalidatePath("/admin/categories");
   revalidatePath("/categories");
+  revalidatePath("/");
+}
+
+export async function bulkDeleteCategories(ids: string[]) {
+  await requireAdmin();
+  if (ids.length === 0) return;
+  const linked = await prisma.product.findMany({
+    where: { categoryId: { in: ids } },
+    select: { categoryId: true },
+    distinct: ["categoryId"],
+  });
+  if (linked.length > 0) {
+    throw new Error(
+      `Cannot delete: ${linked.length} selected categor${linked.length > 1 ? "ies have" : "y has"} linked products. Remove or reassign them first.`
+    );
+  }
+  await prisma.category.deleteMany({ where: { id: { in: ids } } });
+  revalidatePath("/admin/categories");
+  revalidatePath("/categories");
+  revalidatePath("/");
 }
